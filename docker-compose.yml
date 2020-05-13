@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
     
 services:
   db:
@@ -7,6 +7,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -16,3 +18,24 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    
+  node:
+    build:
+      context: ./frontend
+    ports:
+      - 3000:3000
+    command: npm run dev
+    volumes:
+      - ./frontend/:/code
+      - /code/node_modules
+      - /code/.next
+    links: 
+      - db
+
+volumes:
+  postgres-data:
+
+networks:
+  default:
+    name: new_django_project
+    
