@@ -1,6 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import { parseCookies } from "nookies";
 
+import { deleteNil } from "../helpers";
+
 async function request<T>(
   method: "GET" | "POST" | "PATCH" | "DELETE" | "PUT",
   url: string,
@@ -18,13 +20,11 @@ async function request<T>(
     method,
     url: `${baseUrl}${url}`,
     data,
-    ...(authToken
-      ? {
-          headers: {
-            Authorization: `token ${authToken}`,
-          },
-        }
-      : {}),
+    withCredentials: true,
+    headers: deleteNil({
+      "Access-Control-Allow-Credentials": "true",
+      Authorization: authToken ? `token ${authToken}` : null,
+    }),
   });
 
   return response;
@@ -45,16 +45,11 @@ export function getTasks() {
   return request<Task[]>("GET", "/task/list/");
 }
 
-export function createTask({
-  title = "",
-  due_date,
-}: {
-  title: string;
-  due_date: Date;
-}) {
+export function createTask({ title = "", due_date, description = "" }: Task) {
   return request<Task>("POST", "/task/create/", {
     title,
     due_date,
+    description,
   });
 }
 
@@ -63,8 +58,12 @@ export function deleteTask({ id = "" }) {
 }
 
 export function editTask(data: Task) {
-  const { id } = data;
-  return request<Task>("POST", `/task/update/${id}/`, data);
+  const { id, title, description, due_date } = data;
+  return request<Task>("POST", `/task/update/${id}/`, {
+    title,
+    description,
+    due_date,
+  });
 }
 
 export function me(token = "") {

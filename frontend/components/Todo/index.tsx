@@ -8,6 +8,7 @@ import React from "react";
 
 import { createTask, deleteTask, editTask, getTasks } from "../../api";
 import { useAppContext } from "../../contexts/AppContext";
+import { useUserContext } from "../../contexts/UserContext";
 import Spaced from "../Spaced";
 import Task from "../Task";
 import TaskModal from "../TaskModal";
@@ -28,6 +29,7 @@ const useStyles = makeStyles((theme) =>
 export default function Todo() {
   const classes = useStyles();
   const { loading, setLoading } = useAppContext();
+  const { user } = useUserContext();
 
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [open, setOpen] = React.useState({ taskModal: false });
@@ -46,8 +48,12 @@ export default function Todo() {
   }, []);
 
   React.useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    (async () => {
+      setLoading(true);
+      await fetchTasks();
+      setLoading(false);
+    })();
+  }, [fetchTasks, setLoading]);
 
   const removeTask = async (id = "") => {
     try {
@@ -87,6 +93,11 @@ export default function Todo() {
   return (
     <>
       <Spaced spacing={2} className={classes.root}>
+        {user && (
+          <Typography variant="overline">
+            <strong>{`Todos by: ${user.username}`}</strong>
+          </Typography>
+        )}
         {tasks.length > 0 ? (
           <Spaced spacing={2} className={classes.tasks}>
             {tasks.map((task) => {

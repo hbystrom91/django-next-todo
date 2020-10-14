@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.contrib.auth.models import User
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -29,7 +30,8 @@ def apiOverview(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def taskList(request):
-    tasks = Task.objects.all().order_by("due_date")
+    user = request.user
+    tasks = Task.objects.filter(user=user.pk).order_by("due_date")
     serializer = TaskSerializer(tasks, many=True)
     return Response(serializer.data)
 
@@ -45,6 +47,8 @@ def taskDetail(request, pk):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def taskCreate(request):
+    user = request.user
+    request.data["user"] = user.pk
     serializer = TaskSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -56,10 +60,14 @@ def taskCreate(request):
 @permission_classes([IsAuthenticated])
 def taskUpdate(request, pk):
     task = Task.objects.get(id=pk)
+    user = request.user
+    request.data["user"] = user.pk
     serializer = TaskSerializer(instance=task, data=request.data)
 
     if serializer.is_valid():
         serializer.save()
+    else:
+        print("not valid")
     return Response(serializer.data)
 
 
