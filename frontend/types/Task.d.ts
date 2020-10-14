@@ -3,6 +3,6 @@ declare type Task = {
   title: string;
   id: string;
   due_date: Date;
-  user: number;
+  user?: number;
   description: string;
 };

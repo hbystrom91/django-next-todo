@@ -4,14 +4,25 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import React from "react";
+import React, { CSSProperties } from "react";
+import { animated, useTransition, UseTransitionResult } from "react-spring";
 
 import { createTask, deleteTask, editTask, getTasks } from "../../api";
 import { useAppContext } from "../../contexts/AppContext";
 import { useUserContext } from "../../contexts/UserContext";
 import Spaced from "../Spaced";
-import Task from "../Task";
-import TaskModal from "../TaskModal";
+import Task, { CARD_HEIGHT } from "../Task";
+import TaskModal, { TaskModalFormValues } from "../TaskModal";
+
+interface TransitionProps extends CSSProperties {
+  y?: number;
+}
+
+interface EnterUpdateType extends Task {
+  height: number;
+  y: number;
+  opacity: number;
+}
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -19,7 +30,9 @@ const useStyles = makeStyles((theme) =>
       width: "100%",
       height: "100%",
     },
-    tasks: {},
+    tasks: {
+      margin: `${theme.spacing(1, 0, -1, 0)} !important`,
+    },
     task: {
       padding: theme.spacing(2),
     },
@@ -67,7 +80,7 @@ export default function Todo() {
     }
   };
 
-  const onSubmit = async (values: Task) => {
+  const onSubmit = async (values: TaskModalFormValues) => {
     try {
       setLoading(true);
       if (!editing) {
@@ -88,6 +101,26 @@ export default function Todo() {
     setEditing(undefined);
   };
 
+  let height = 0;
+
+  const transitions = useTransition(
+    tasks.map((task: Task) => ({
+      ...task,
+      y: (height += CARD_HEIGHT) - CARD_HEIGHT,
+    })) as EnterUpdateType[],
+    (d) => d.id,
+    {
+      from: { height: 0, opacity: 0 },
+      leave: { height: 0, opacity: 0 },
+      enter: ({ y = 0, height = 0 }: EnterUpdateType) => ({
+        y,
+        height,
+        opacity: 1,
+      }),
+      update: ({ y = 0, height = 0 }: EnterUpdateType) => ({ y, height }),
+    }
+  ) as UseTransitionResult<Task, TransitionProps>[];
+
   const openTaskModal = () => setOpen({ ...open, taskModal: true });
 
   return (
@@ -98,26 +131,39 @@ export default function Todo() {
             <strong>{`Todos by: ${user.username}`}</strong>
           </Typography>
         )}
-        {tasks.length > 0 ? (
-          <Spaced spacing={2} className={classes.tasks}>
-            {tasks.map((task) => {
-              const { title, id, due_date } = task;
-              return (
-                <Task
-                  onDelete={() => {
-                    removeTask(id);
-                  }}
-                  onEdit={() => {
-                    setEditing(task);
-                    openTaskModal();
-                  }}
-                  due_date={due_date}
-                  title={title}
-                  key={id}
-                />
-              );
-            })}
-          </Spaced>
+        {transitions.length > 0 ? (
+          <div style={{ height }} className={classes.tasks}>
+            {transitions.map(
+              ({ item: task, props: { y, ...rest }, key }, index) => {
+                const { title, id, due_date } = task;
+
+                return (
+                  <animated.div
+                    style={{
+                      zIndex: transitions.length - index,
+                      transform: y?.interpolate(
+                        (y) => `translate3d(0,${y}px,0)`
+                      ),
+                      ...rest,
+                    }}
+                    key={key}
+                  >
+                    <Task
+                      onDelete={() => {
+                        removeTask(id);
+                      }}
+                      onEdit={() => {
+                        setEditing(task);
+                        openTaskModal();
+                      }}
+                      due_date={due_date}
+                      title={title}
+                    />
+                  </animated.div>
+                );
+              }
+            )}
+          </div>
         ) : (
           <Typography>{"No tasks here :')"}</Typography>
         )}

@@ -19,8 +19,10 @@ import Spaced from "../Spaced";
 const INITIAL_VALUES = {
   title: "",
   completed: false,
+  description: "",
   id: "",
   due_date: new Date(),
+  user: "",
 };
 
 const useStyles = makeStyles(() =>
@@ -33,11 +35,19 @@ const useStyles = makeStyles(() =>
   })
 );
 
+export interface TaskModalFormValues {
+  completed: boolean;
+  title: string;
+  id: string;
+  due_date: Date;
+  description: string;
+}
+
 interface TaskModalProps {
   handleClose: () => void;
   open: boolean;
-  onSubmit: (values: Task) => Promise<void>;
-  initialValues?: Task;
+  onSubmit: (values: TaskModalFormValues) => Promise<void>;
+  initialValues?: TaskModalFormValues;
 }
 
 export default function TaskModal({

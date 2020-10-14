@@ -7,6 +7,7 @@ import {
 import React from "react";
 import { Field, Form } from "react-final-form";
 
+import { useAppContext } from "../../contexts/AppContext";
 import { useUserContext } from "../../contexts/UserContext";
 import FFInput from "../FFInput";
 
@@ -32,10 +33,13 @@ export interface LoginFormValues {
 export default function LoginForm() {
   const classes = useStyles();
 
+  const { loading, setLoading } = useAppContext();
   const { login } = useUserContext();
 
   const onSubmit = async (values: LoginFormValues) => {
-    login(values);
+    setLoading(true);
+    await login(values);
+    setLoading(false);
   };
 
   return (
@@ -49,7 +53,12 @@ export default function LoginForm() {
             name="password"
             component={FFInput}
           />
-          <Button type="submit" color="primary" variant="contained">
+          <Button
+            disabled={loading}
+            type="submit"
+            color="primary"
+            variant="contained"
+          >
             Login
           </Button>
         </form>
