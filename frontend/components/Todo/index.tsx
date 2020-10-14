@@ -1,4 +1,9 @@
-import { Button, createStyles, makeStyles } from "@material-ui/core";
+import {
+  Button,
+  createStyles,
+  makeStyles,
+  Typography,
+} from "@material-ui/core";
 import React from "react";
 
 import { createTask, deleteTask, editTask, getTasks } from "../../api";
@@ -82,10 +87,10 @@ export default function Todo() {
   return (
     <>
       <Spaced spacing={2} className={classes.root}>
-        {tasks.length > 0 && (
+        {tasks.length > 0 ? (
           <Spaced spacing={2} className={classes.tasks}>
             {tasks.map((task) => {
-              const { title, id } = task;
+              const { title, id, due_date } = task;
               return (
                 <Task
                   onDelete={() => {
@@ -95,12 +100,15 @@ export default function Todo() {
                     setEditing(task);
                     openTaskModal();
                   }}
+                  due_date={due_date}
                   title={title}
                   key={id}
                 />
               );
             })}
           </Spaced>
+        ) : (
+          <Typography>{"No tasks here :')"}</Typography>
         )}
 
         <Button

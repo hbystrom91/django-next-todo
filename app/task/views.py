@@ -29,7 +29,7 @@ def apiOverview(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def taskList(request):
-    tasks = Task.objects.all().order_by("-id")
+    tasks = Task.objects.all().order_by("due_date")
     serializer = TaskSerializer(tasks, many=True)
     return Response(serializer.data)
 

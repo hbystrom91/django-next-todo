@@ -45,9 +45,16 @@ export function getTasks() {
   return request<Task[]>("GET", "/task/list/");
 }
 
-export function createTask({ title = "" }) {
+export function createTask({
+  title = "",
+  due_date,
+}: {
+  title: string;
+  due_date: Date;
+}) {
   return request<Task>("POST", "/task/create/", {
     title,
+    due_date,
   });
 }
 

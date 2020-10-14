@@ -1,19 +1,26 @@
+import DateFnsUtils from "@date-io/date-fns";
 import { createStyles, makeStyles } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import {
+  KeyboardDateTimePicker,
+  MuiPickersUtilsProvider,
+} from "@material-ui/pickers";
 import React from "react";
 import { Field, Form } from "react-final-form";
 
 import { useAppContext } from "../../contexts/AppContext";
 import FFInput from "../FFInput";
+import Spaced from "../Spaced";
 
 const INITIAL_VALUES = {
   title: "",
   completed: false,
   id: "",
+  due_date: new Date(),
 };
 
 const useStyles = makeStyles(() =>
@@ -56,13 +63,34 @@ export default function TaskModal({
             >
               <DialogTitle id="form-dialog-title">New task</DialogTitle>
               <DialogContent>
-                <Field
-                  fullWidth
-                  label="Title"
-                  name="title"
-                  component={FFInput}
-                />
+                <Spaced spacing={2}>
+                  <Field
+                    fullWidth
+                    label="Title"
+                    name="title"
+                    component={FFInput}
+                  />
+
+                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <Field fullWidth name="due_date" label="Due date">
+                      {({ input }) => (
+                        <KeyboardDateTimePicker
+                          variant="inline"
+                          ampm={false}
+                          fullWidth
+                          name="due_date"
+                          label="Due date"
+                          value={input.value}
+                          onChange={input.onChange}
+                          disablePast
+                          format="yyyy/MM/dd HH:mm"
+                        />
+                      )}
+                    </Field>
+                  </MuiPickersUtilsProvider>
+                </Spaced>
               </DialogContent>
+
               <DialogActions>
                 <Button onClick={handleClose} color="primary">
                   Cancel
